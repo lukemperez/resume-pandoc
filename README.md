@@ -1,56 +1,60 @@
 # resume-pandoc
 
-LaTeX resume template for Pandoc based on Jason R. Blevins' template;
-http://jblevins.org/projects/cv-template/.
+(c) 2026 Luke M. Perez
+LaTex resume template for Pandoc based on John Bokma's revision of 
+Jason R. Blevins' template.
 
-I've included my own resume in markdown format as an example.
-To create the LaTeX version, use:
+- https://github.com/john-bokma/resume-pandoc
+- http://jblevins.org/projects/cv-template/.
 
-~~~
-pandoc perl-programmer-john-bokma-resume.md -f markdown+yaml_metadata_block \
-  --template templates/jb2resume.latex \
-  -o perl-programmer-john-bokma-resume.tex
-~~~
+This fork contains Bokma's resume in markdown as an example. But some edits have been made to conform with my setup in MacOS.
 
-And to create the PDF version, use:
+Specifically, I store all my templates in `.pandoc/` on MacOS and use makefiles. For more on makefiles see, [Makefiles (GNU make)](https://www.gnu.org/software/make/manual/html_node/Makefiles.html), and of course [Pandoc](pandoc.org). For more on my Pandoc setup, see my [github repo .pandoc](https://github.com/lukemperez/pandoc-templates).
 
-~~~
-pandoc perl-programmer-john-bokma-resume.md -f markdown+yaml_metadata_block \
-  --template templates/jb2resume.latex \
-  -o perl-programmer-john-bokma-resume.pdf
-~~~
+## Using Make (a brief version)
 
-## Using Docker
-
-Create the Docker container image using:
+Install makefile if it is not already. I use [Brew](brew.sh). With Brew, 
 
 ```
-docker build --tag=resume-pandoc .
+brew install make
 ```
 
-And run it using:
+Create a file called `makefile` in the same directory as the markdown file. It needs no extension. 
+
+Save this text in the file.
 
 ```
-docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` \
-    resume-pandoc perl-programmer-john-bokma-resume.md \
-                  -f markdown+yaml_metadata_block \
-                  --template templates/jb2resume.latex \
-                  -o perl-programmer-john-bokma-resume.pdf
+PDFS := $(patsubst %.md,%.md.pdf,$(wildcard *.md))
+
+PREFIX = $(HOME)/.pandoc/md
+
+all : $(PDFS)
+
+%.md.pdf : %.md
+	pandoc *.md \
+	--pdf-engine=xelatex \
+	--template=$(PREFIX)/resume.latex \
+	-s -o $@  && open $@
+
+clean:
+	rm -rf *.pdf *.html *.log *.aux
+
+rebuild:
+
+	make clean && make
 ```
 
+In your terminal, use the command
 
-For more information, please read my blog entry
-[Giving Docker Desktop for macOS a Second
-Chance](http://johnbokma.com/blog/2021/06/02/giving-docker-desktop-for-macos-a-second-chance.html),
-which provides an easy walk-through.
+```
+make
+```
 
-## Getting Started on Ubuntu 17.04
-
-Please read my blog entry
-[Installing the latest version of Pandoc on Ubuntu 17.04](http://johnbokma.com/blog/2017/05/17/installing-latest-pandoc-on-ubuntu.html), which
-provides an easy walk-through.
+The makefile will execute the script. *Note Bene*. The use of `$(HOME)` may not be necessary. I have multiple machines with different file paths. To make it work, `$(HOME)` tells the computer to start in its own home directory.
 
 ## YAML Meta Block
+
+These are the settings from Bokma's version. I had to remove some of the special font encodings. 
 
 name
  : the name on the resume.
@@ -101,7 +105,7 @@ See [http://johnbokma.com/documents/perl-programmer-john-bokma-resume.pdf](http:
 
 # Credits
 
-- Jason R. Blevins for making the LaTeX resume example that inspired this
-  template.
+- John Bokma's repo came up first when searching for an updated template in fall 2026.
+- Jason R. Blevins for making the LaTeX resume example that inspired this template.
 - Christoph Frings and Andrew for their help with description list; reference
   [enumitem: multiline label with text following label - TeX - LaTeX Stack Exchange](https://tex.stackexchange.com/questions/323903/enumitem-multiline-label-with-text-following-label).
